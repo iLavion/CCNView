@@ -1,0 +1,9 @@
+# MongoDB Docker folder
+database/
+
+# Rust target folder
+target/
+
+# Rust Cargo lock file
+Cargo.lock
+
