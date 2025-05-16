@@ -7,3 +7,11 @@ target/
 # Rust Cargo lock file
 Cargo.lock
 
+# Environment files
+.env
+
+# Node.js dependencies
+node_modules/
+
+# Node.js build output
+dist/
