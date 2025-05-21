@@ -1,17 +1,41 @@
-fn main() {
-    // Ingredient counts: [raspberry, eggs, sugar, milk_buckets, wheat_flour]
-    let ingredients = vec![12, 15, 10, 8, 20];
-    let desired_cakes = 11;
+// api/src/main.rs
+// Entry point for the API
 
-    raspberry_cake(&ingredients, desired_cakes);
-}
+use actix_web::{App, HttpServer};
+use api::routes::configure_routes;
+use api::configs::database::get_db_client;
+use api::health::health_check;
+use api::utilities::logger::setup_logger;
 
-fn raspberry_cake(ingredients: &[i32], desired_cakes: i32) {
-    // Each cake needs 1 of each ingredient
-    let cakes_possible = *ingredients.iter().min().unwrap_or(&0);
-    if cakes_possible >= desired_cakes {
-        println!("You have enough ingredients to make {desired_cakes} raspberry cakes!");
-    } else {
-        println!("You can only make {cakes_possible} raspberry cakes, not {desired_cakes}.");
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    // Environment variables
+    dotenvy::dotenv().ok();
+
+    // Logger
+    setup_logger();
+    log::info!("{}", "=".repeat(48));
+    log::info!("Initializing API Server...");
+
+    // Health checks
+    if let Err(e) = health_check().await {
+        eprintln!("{e}");
+        std::process::exit(1);
     }
+
+    // Database
+    let db_client = get_db_client().await;
+
+    // Server
+    log::info!("API has been initialized at http://127.0.0.1:8080");
+    log::info!("{}", "=".repeat(48));
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(actix_web::web::Data::new(db_client.clone()))
+            .configure(configure_routes)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
