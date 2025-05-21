@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+    mongodb:
+        container_name: CCNViewDB
+        image: mongo:latest
+        ports:
+            - "27784:27017"
+        volumes:
+            - ./database:/data/db
+        restart: unless-stopped
